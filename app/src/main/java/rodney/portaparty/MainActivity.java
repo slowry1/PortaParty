@@ -6,8 +6,12 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -31,6 +35,7 @@ public class MainActivity extends AppCompatActivity{
     private ListView listView;
     private Button createPartyButton;
     private String username;
+    private CheckBox checkBox;
     private CustomListViewAdapter customListViewAdapter;
     private ArrayList<HashMap<String,String>> arrayList = null;
 
@@ -44,6 +49,7 @@ public class MainActivity extends AppCompatActivity{
         itemEditText = (EditText) findViewById(R.id.itemEditText);
         listView = (ListView) findViewById(R.id.item_list);
         createPartyButton = (Button) findViewById(R.id.createPartyButton);
+        checkBox = (CheckBox) findViewById(R.id.userCheckbox);
 
 
         SharedPreferences sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
@@ -69,6 +75,19 @@ public class MainActivity extends AppCompatActivity{
                 arrayList = popCustomListViewAdapter();
             }
         });
+        ////////////////////////////// THIS IS WHERE IT BREAKS TRYING TO FIND A CHECKBOX WHEN THEY ARE IN A LIST VIEW I THINK
+/*        checkBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "CheckBox", Toast.LENGTH_SHORT).show();
+
+            }
+        });*/
+        /*checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            }
+        });*/
     }
     private ArrayList<HashMap<String,String>> popCustomListViewAdapter() {
         listView = (ListView) findViewById(R.id.item_list);
@@ -103,6 +122,59 @@ public class MainActivity extends AppCompatActivity{
         super.onResume();
         arrayList = popCustomListViewAdapter();
         SharedPreferences sharedPref = getSharedPreferences("userInfo",Context.MODE_PRIVATE);
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+        if (id == R.id.action_login) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+            return true;
+        }
+        if (id == R.id.action_logout) {
+            firebase.unauth();
+            SharedPreferences preferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.clear();
+            editor.apply();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    public boolean onPrepareOptionsMenu(Menu menu)
+    {
+        SharedPreferences sharedPref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        MenuItem login = menu.findItem(R.id.action_login);
+        if(sharedPref.contains("username")) {
+            login.setVisible(false);
+        } else {
+            login.setVisible(true);
+        }
+        MenuItem logout = menu.findItem(R.id.action_logout);
+        if(sharedPref.contains("username")) {
+            logout.setVisible(true);
+        } else {
+            logout.setVisible(false);
+        }
+        return true;
     }
     
 
