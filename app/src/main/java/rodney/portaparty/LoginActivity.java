@@ -27,18 +27,18 @@ public class LoginActivity extends AppCompatActivity {
     private Firebase firebase;
     private EditText emailEditText;
     private EditText passwordEditText;
-    private String email;
+    private String email, uid,username;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SharedPreferences sharedPref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-        if(sharedPref.contains("username")){
-            if(!(sharedPref.getString("username","").equals(""))){
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        if(sharedPreferences.contains("username") && sharedPreferences.getString("username","NONE!") != "NONE!"){
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
-            }
         }
+
         setContentView(R.layout.login_activity);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -48,8 +48,8 @@ public class LoginActivity extends AppCompatActivity {
 
         emailEditText = (EditText) findViewById(R.id.emailEditText);
         passwordEditText = (EditText) findViewById(R.id.passwordEditText);
-
         loginButton = (Button) findViewById(R.id.loginButton);
+
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -61,20 +61,15 @@ public class LoginActivity extends AppCompatActivity {
                         Log.i("TEST", "Success: " + authData);
                         Toast.makeText(LoginActivity.this, "Login Successfully", Toast.LENGTH_SHORT).show();
                         email = (String) authData.getProviderData().get("email");
-                        String uid = authData.getUid();
-                        // Saves user info
-                        SharedPreferences sharedPref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPref.edit();
-
-
+                        uid = authData.getUid();
                         firebase.child("user").addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
                                 for (DataSnapshot childSnap : dataSnapshot.getChildren()) {
                                     if (childSnap.child("email").getValue().toString().equals(email)) {
-                                        SharedPreferences sharedPref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-                                        SharedPreferences.Editor editor = sharedPref.edit();
-                                        String username = childSnap.child("username").getValue().toString();
+                                        Toast.makeText(LoginActivity.this, "INSIDE FIREBASE LOOP", Toast.LENGTH_SHORT).show();
+                                        username = childSnap.child("username").getValue().toString();
                                         String firstName = childSnap.child("firstName").getValue().toString();
                                         String lastName = childSnap.child("lastName").getValue().toString();
                                         String gender = childSnap.child("gender").getValue().toString();
@@ -82,7 +77,14 @@ public class LoginActivity extends AppCompatActivity {
                                         editor.putString("firstName", firstName);
                                         editor.putString("lastName", lastName);
                                         editor.putString("gender", gender);
-                                        editor.apply();
+                                        editor.putString("email", email);
+                                        editor.putString("uid", uid);
+                                        editor.commit();
+                                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                        intent.putExtra("username", username);
+                                        intent.putExtra("email", email);
+                                        intent.putExtra("uid", uid);
+                                        startActivity(intent);
                                     }
                                 }
                             }
@@ -93,17 +95,15 @@ public class LoginActivity extends AppCompatActivity {
                             }
                         });
 
+/*                        // Saves user info
+                        SharedPreferences sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
 
                         editor.putString("email", email);
                         editor.putString("uid", uid);
-                        editor.apply();
+                        editor.commit();*/
 
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
 
-                        intent.putExtra("username", sharedPref.getString("username", ""));
-                        intent.putExtra("email", email);
-                        intent.putExtra("uid", uid);
-                        startActivity(intent);
                     }
 
                     @Override

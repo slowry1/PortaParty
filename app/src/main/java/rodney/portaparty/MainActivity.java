@@ -37,7 +37,12 @@ public class MainActivity extends AppCompatActivity{
     private String username;
     private CheckBox checkBox;
     private CustomListViewAdapter customListViewAdapter;
-    private ArrayList<HashMap<String,String>> arrayList = null;
+    private ArrayList<HashMap<String,String>> arrayList;
+    private Button goToLoginButton;
+    private Button clearButton;
+    private SharedPreferences sharedPreferences;
+    private HashMap<String, String> data ;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,20 +55,17 @@ public class MainActivity extends AppCompatActivity{
         listView = (ListView) findViewById(R.id.item_list);
         createPartyButton = (Button) findViewById(R.id.createPartyButton);
         checkBox = (CheckBox) findViewById(R.id.userCheckbox);
+        sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        Log.i("BACON", sharedPreferences.getAll().toString());
 
-
-        SharedPreferences sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-        if(sharedPreferences.getString("username", "").isEmpty()){
-            username = sharedPreferences.getString("username", "");
-            Toast.makeText(MainActivity.this, username+"IN THE IF", Toast.LENGTH_SHORT).show();
-
+//SharedPreferences sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        if(sharedPreferences.getString("username","NONE!") == "NONE!"){
+            username = sharedPreferences.getString("username", "NONE!");
         }else{
             createPartyButton.setEnabled(false);
             addItemButton.setEnabled(true);
-            username = sharedPreferences.getString("username", "");
-            Toast.makeText(MainActivity.this, username, Toast.LENGTH_SHORT).show();
-            arrayList = popCustomListViewAdapter();
-
+            username = sharedPreferences.getString("username", "NONE!");
+      //      arrayList = popCustomListViewAdapter();
         }
 
         addItemButton.setOnClickListener(new View.OnClickListener() {
@@ -73,8 +75,10 @@ public class MainActivity extends AppCompatActivity{
                 Item itemObject = new Item(item,"");
                 firebase.child("party/" + username +"/"+"item/"+item+"/").setValue(itemObject);
                 arrayList = popCustomListViewAdapter();
+                Toast.makeText(MainActivity.this, item+" added to the list!", Toast.LENGTH_SHORT).show();
             }
         });
+
         ////////////////////////////// THIS IS WHERE IT BREAKS TRYING TO FIND A CHECKBOX WHEN THEY ARE IN A LIST VIEW I THINK
 /*        checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,22 +95,30 @@ public class MainActivity extends AppCompatActivity{
     }
     private ArrayList<HashMap<String,String>> popCustomListViewAdapter() {
         listView = (ListView) findViewById(R.id.item_list);
-        final ArrayList<HashMap<String, String>> arrayList = new ArrayList<>();
+        arrayList = new ArrayList<>();
         firebase.child("party/"+username).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                HashMap<String, String> data = new HashMap<>();
+                int i = 0;
+
                 for(DataSnapshot photoSnapshot : dataSnapshot.child("item").getChildren()){
                         data = new HashMap<>();
                         data.put("item", photoSnapshot.child("item").getValue().toString());
                         data.put("member", photoSnapshot.child("member").getValue().toString());
                         arrayList.add(data);
+                    Log.i("BACON", photoSnapshot.child("item").getValue().toString()+ String.valueOf(i));
+                    Log.i("BACON", "inside the photosnapshot  "+String.valueOf(i));
+                    //Setup adapter
+                    customListViewAdapter = new CustomListViewAdapter(getApplicationContext(), arrayList);
+                    listView.setAdapter(customListViewAdapter);
+                    Log.i("BACON", "after the listviewadapter  "+String.valueOf(i));
+                    i++;
                 }
 //to add to git
-                //Setup adapter
-                customListViewAdapter = new CustomListViewAdapter(getApplicationContext(), arrayList);
-                listView.setAdapter(customListViewAdapter);
+
+
             }
+
 
             @Override
             public void onCancelled(FirebaseError firebaseError) {
@@ -120,8 +132,11 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onResume(){
         super.onResume();
+        Intent intent = getIntent();
+        username = intent.getStringExtra("username");
+        sharedPreferences.edit().putString("username", username).apply();
         arrayList = popCustomListViewAdapter();
-        SharedPreferences sharedPref = getSharedPreferences("userInfo",Context.MODE_PRIVATE);
+ //SharedPreferences sharedPreferences = getSharedPreferences("userInfo",Context.MODE_PRIVATE);
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -149,10 +164,12 @@ public class MainActivity extends AppCompatActivity{
         }
         if (id == R.id.action_logout) {
             firebase.unauth();
-            SharedPreferences preferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = preferences.edit();
+//SharedPreferences sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.clear();
-            editor.apply();
+            editor.commit();
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
             return true;
         }
 
@@ -161,15 +178,15 @@ public class MainActivity extends AppCompatActivity{
 
     public boolean onPrepareOptionsMenu(Menu menu)
     {
-        SharedPreferences sharedPref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         MenuItem login = menu.findItem(R.id.action_login);
-        if(sharedPref.contains("username")) {
+        if(sharedPreferences.contains("username")) {
             login.setVisible(false);
         } else {
             login.setVisible(true);
         }
         MenuItem logout = menu.findItem(R.id.action_logout);
-        if(sharedPref.contains("username")) {
+        if(sharedPreferences.contains("username")) {
             logout.setVisible(true);
         } else {
             logout.setVisible(false);
