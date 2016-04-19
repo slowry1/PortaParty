@@ -36,7 +36,7 @@ public class LoginActivity extends AppCompatActivity {
         sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         if(sharedPreferences.contains("username") && sharedPreferences.getString("username","NONE!") != "NONE!"){
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                startActivity(intent);
+            startActivity(intent);
         }
 
         setContentView(R.layout.login_activity);
@@ -68,7 +68,6 @@ public class LoginActivity extends AppCompatActivity {
                                 SharedPreferences.Editor editor = sharedPreferences.edit();
                                 for (DataSnapshot childSnap : dataSnapshot.getChildren()) {
                                     if (childSnap.child("email").getValue().toString().equals(email)) {
-                                        Toast.makeText(LoginActivity.this, "INSIDE FIREBASE LOOP", Toast.LENGTH_SHORT).show();
                                         username = childSnap.child("username").getValue().toString();
                                         String firstName = childSnap.child("firstName").getValue().toString();
                                         String lastName = childSnap.child("lastName").getValue().toString();

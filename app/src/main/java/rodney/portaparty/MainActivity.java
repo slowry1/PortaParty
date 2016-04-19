@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
         Firebase.setAndroidContext(this);
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         firebase = new Firebase("https://portaparty.firebaseio.com/");
         addItemButton = (Button) findViewById(R.id.addItemButton);
         itemEditText = (EditText) findViewById(R.id.itemEditText);
@@ -61,11 +63,13 @@ public class MainActivity extends AppCompatActivity{
 //SharedPreferences sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         if(sharedPreferences.getString("username","NONE!") == "NONE!"){
             username = sharedPreferences.getString("username", "NONE!");
+            Log.i("BACON", username+" Inside MA IF");
         }else{
             createPartyButton.setEnabled(false);
             addItemButton.setEnabled(true);
             username = sharedPreferences.getString("username", "NONE!");
-      //      arrayList = popCustomListViewAdapter();
+            Log.i("BACON", username+" Inside MA ELSE");
+            //arrayList = popCustomListViewAdapter();
         }
 
         addItemButton.setOnClickListener(new View.OnClickListener() {
@@ -99,20 +103,15 @@ public class MainActivity extends AppCompatActivity{
         firebase.child("party/"+username).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                int i = 0;
-
                 for(DataSnapshot photoSnapshot : dataSnapshot.child("item").getChildren()){
                         data = new HashMap<>();
                         data.put("item", photoSnapshot.child("item").getValue().toString());
                         data.put("member", photoSnapshot.child("member").getValue().toString());
                         arrayList.add(data);
-                    Log.i("BACON", photoSnapshot.child("item").getValue().toString()+ String.valueOf(i));
-                    Log.i("BACON", "inside the photosnapshot  "+String.valueOf(i));
+                    Log.i("BACON", photoSnapshot.child("item").getValue().toString());
                     //Setup adapter
                     customListViewAdapter = new CustomListViewAdapter(getApplicationContext(), arrayList);
                     listView.setAdapter(customListViewAdapter);
-                    Log.i("BACON", "after the listviewadapter  "+String.valueOf(i));
-                    i++;
                 }
 //to add to git
 
@@ -132,11 +131,13 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onResume(){
         super.onResume();
-        Intent intent = getIntent();
+      /*  Intent intent = getIntent();
         username = intent.getStringExtra("username");
-        sharedPreferences.edit().putString("username", username).apply();
+        sharedPreferences.edit().putString("username", username).apply();*/
         arrayList = popCustomListViewAdapter();
- //SharedPreferences sharedPreferences = getSharedPreferences("userInfo",Context.MODE_PRIVATE);
+        Log.i("BACON", username+" Inside MA ONRESUME");
+
+        //SharedPreferences sharedPreferences = getSharedPreferences("userInfo",Context.MODE_PRIVATE);
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
