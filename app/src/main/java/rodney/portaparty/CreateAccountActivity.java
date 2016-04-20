@@ -4,8 +4,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,7 +30,8 @@ import java.util.Map;
 /**
  * Created by rodney on 4/3/2016.
  */
-public class CreateAccountActivity extends AppCompatActivity {
+public class CreateAccountActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
 
     private Firebase firebase;
     private EditText usernameEditText;
@@ -40,10 +47,21 @@ public class CreateAccountActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.create_account);
+        setContentView(R.layout.create_account_activity);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         Firebase.setAndroidContext(this);
         firebase = new Firebase("https://portaparty.firebaseio.com/");
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.create_account);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.create_nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
 
         usernameEditText = (EditText) findViewById(R.id.usernameEditText);
         buttonGroup = (RadioGroup) findViewById(R.id.buttonGroup);
@@ -142,6 +160,15 @@ public class CreateAccountActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.create_account);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
 
     private Boolean checkIfNameFree(final String uName) {
         final Boolean[] uNameFree = {true};
@@ -161,6 +188,29 @@ public class CreateAccountActivity extends AppCompatActivity {
             }
         });
         return uNameFree[0];
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.partiesItem) {
+            Intent intent = new Intent(CreateAccountActivity.this, MainActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.loginItem) {
+            Intent intent = new Intent(CreateAccountActivity.this, LoginActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.createAccountItem) {
+
+        } else if (id == R.id.aboutItem) {
+
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.create_account);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 }
 

@@ -4,7 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,7 +17,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -29,7 +33,9 @@ import java.util.List;
 /**
  * Created by rodney on 4/3/2016.
  */
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
+
     private Firebase firebase;
     private Button addItemButton;
     private EditText itemEditText;
@@ -39,31 +45,43 @@ public class MainActivity extends AppCompatActivity{
     private CheckBox checkBox;
     private CustomListViewAdapter customListViewAdapter;
     private ArrayList<HashMap<String,String>> arrayList;
-    private Button goToLoginButton;
-    private Button clearButton;
     private SharedPreferences sharedPreferences;
     private HashMap<String, String> data ;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         Firebase.setAndroidContext(this);
-        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         firebase = new Firebase("https://portaparty.firebaseio.com/");
+
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.main);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.main_nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
         addItemButton = (Button) findViewById(R.id.addItemButton);
         itemEditText = (EditText) findViewById(R.id.itemEditText);
         listView = (ListView) findViewById(R.id.item_list);
         createPartyButton = (Button) findViewById(R.id.createPartyButton);
         checkBox = (CheckBox) findViewById(R.id.userCheckbox);
+
         sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         Log.i("BACON", sharedPreferences.getAll().toString());
 
-//SharedPreferences sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         if(sharedPreferences.getString("username","NONE!") == "NONE!"){
             username = sharedPreferences.getString("username", "NONE!");
-            Log.i("BACON", username+" Inside MA IF");
+            Log.i("BACON", username + " Inside MA IF");
         }else{
             createPartyButton.setEnabled(false);
             addItemButton.setEnabled(true);
@@ -76,15 +94,14 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(View view) {
                 String item = String.valueOf(itemEditText.getText());
-                Item itemObject = new Item(item,"");
+                Item itemObject = new Item(item, "");
                 firebase.child("party/" + username +"/"+"item/"+item+"/").setValue(itemObject);
                 arrayList = popCustomListViewAdapter();
                 Toast.makeText(MainActivity.this, item+" added to the list!", Toast.LENGTH_SHORT).show();
             }
         });
 
-        ////////////////////////////// THIS IS WHERE IT BREAKS TRYING TO FIND A CHECKBOX WHEN THEY ARE IN A LIST VIEW I THINK
-/*        checkBox.setOnClickListener(new View.OnClickListener() {
+        /*        checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(MainActivity.this, "CheckBox", Toast.LENGTH_SHORT).show();
@@ -96,6 +113,7 @@ public class MainActivity extends AppCompatActivity{
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             }
         });*/
+
     }
     private ArrayList<HashMap<String,String>> popCustomListViewAdapter() {
         listView = (ListView) findViewById(R.id.item_list);
@@ -104,20 +122,15 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot photoSnapshot : dataSnapshot.child("item").getChildren()){
-                        data = new HashMap<>();
-                        data.put("item", photoSnapshot.child("item").getValue().toString());
-                        data.put("member", photoSnapshot.child("member").getValue().toString());
-                        arrayList.add(data);
-                    Log.i("BACON", photoSnapshot.child("item").getValue().toString());
+                    data = new HashMap<>();
+                    data.put("item", photoSnapshot.child("item").getValue().toString());
+                    data.put("member", photoSnapshot.child("member").getValue().toString());
+                    arrayList.add(data);
                     //Setup adapter
                     customListViewAdapter = new CustomListViewAdapter(getApplicationContext(), arrayList);
                     listView.setAdapter(customListViewAdapter);
                 }
-//to add to git
-
-
             }
-
 
             @Override
             public void onCancelled(FirebaseError firebaseError) {
@@ -127,6 +140,17 @@ public class MainActivity extends AppCompatActivity{
         });
         return arrayList;
     }
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.main);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
 
     @Override
     protected void onResume(){
@@ -194,6 +218,28 @@ public class MainActivity extends AppCompatActivity{
         }
         return true;
     }
-    
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.partiesItem) {
+
+        } else if (id == R.id.loginItem) {
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.createAccountItem) {
+            Intent intent = new Intent(MainActivity.this, CreateAccountActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.aboutItem) {
+
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.create_account);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
 
 }

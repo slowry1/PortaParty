@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/partiesItem"
+            android:title="Party" />
+        <item
+            android:id="@+id/loginItem"
+            android:title="Login" />
+        <item
+            android:id="@+id/createAccountItem"
+            android:title="Create Account" />
+        <item
+            android:id="@+id/aboutItem"
+            android:title="About" />
+    </group>
+
+</menu>

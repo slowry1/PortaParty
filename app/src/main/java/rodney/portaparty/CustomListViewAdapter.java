@@ -16,12 +16,10 @@ package rodney.portaparty;
 
 public class CustomListViewAdapter extends BaseAdapter {
 
-
     private Context myContext;
     private ArrayList<HashMap<String, String>> buildingArray;
     private static LayoutInflater inflater = null;
-   // private TextView potluckItemTextView;
-    private TextView potluckNameTextView;
+    private TextView potluckItemTextView;
 
 
     public CustomListViewAdapter(Context context, ArrayList<HashMap<String, String>> data) {
@@ -30,6 +28,7 @@ public class CustomListViewAdapter extends BaseAdapter {
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
     }
+
     private static class ViewHolder{
         TextView  potluckItemTextView;
         int position;
@@ -52,41 +51,20 @@ public class CustomListViewAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
         ViewHolder vh;
-
-        if(convertView == null){
+        if (convertView == null){
             vh = new ViewHolder();
             convertView = inflater.inflate(R.layout.list_row, null);
-
             vh.potluckItemTextView = (TextView) convertView.findViewById(R.id.potLuckItem);
             convertView.setTag(vh);
-        }else{
+        } else {
             vh = (ViewHolder) convertView.getTag();
         }
-        HashMap<String, String> myHashMap = new HashMap<>();
+        HashMap<String, String> myHashMap;
 
         myHashMap = buildingArray.get(position);
 
         vh.potluckItemTextView.setText(myHashMap.get("item"));
         return convertView;
-/*
-        View view = convertView;
-        if (convertView == null) {
-            view = inflater.inflate(R.layout.list_row, null);
-
-            TextView  potluckItemTextView = (TextView) view.findViewById(R.id.potLuckItem);
-           // potluckNameTextView = (TextView) view.findViewById(R.id.potLuckName);
-
-            HashMap<String, String> myHashMap = new HashMap<>();
-            myHashMap = buildingArray.get(position);
-            potluckItemTextView.setText(myHashMap.get("item"));
-            //potluckNameTextView.setText(myHashMap.get("username"));
-
-            //        iconImage.setImageDrawable(myContext.getResources().getDrawable(R.drawable.ic_perm_media));
-            //        expandImage.setImageDrawable(myContext.getResources().getDrawable(R.drawable.ic_navigate_next_black));
-
-        }
-        return view;*/
     }
 }
