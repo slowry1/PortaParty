@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity
     private ArrayList<HashMap<String,String>> arrayList;
     private SharedPreferences sharedPreferences;
     private HashMap<String, String> data ;
-
+    private DrawerLayout drawer;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity
 
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.main);
+        drawer = (DrawerLayout) findViewById(R.id.main);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.main);
+        drawer = (DrawerLayout) findViewById(R.id.main);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -236,8 +236,6 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.aboutItem) {
 
         }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.create_account);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
